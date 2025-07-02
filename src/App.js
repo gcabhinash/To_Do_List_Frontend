@@ -1,3 +1,4 @@
+// Import necessary hooks and components
 import { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
@@ -9,6 +10,7 @@ import Login from "./Login";
 import Signup from "./Signup";
 
 function App() {
+  // State management
   const [token, setToken] = useState(localStorage.getItem("token") || "");
   const [tasks, setTasks] = useState([]);
   const [filterStatus, setFilterStatus] = useState("all");
@@ -16,7 +18,7 @@ function App() {
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editingText, setEditingText] = useState("");
 
-
+  // Fetch tasks from backend using the token
   const fetchTasks = async (token) => {
     const response = await fetch(
       "https://to-do-list-backend-fxk9.onrender.com/tasks",
@@ -25,38 +27,40 @@ function App() {
       }
     );
     const data = await response.json();
-    console.log("Fetched tasks:", data);
-    // Ensure tasks is always an array
     setTasks(Array.isArray(data) ? data : data.tasks || []);
   };
-const updateTaskText = async (id, newText) => {
-  const response = await fetch(
-    `https://to-do-list-backend-fxk9.onrender.com/tasks/${id}/text`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ text: newText }),
-    }
-  );
-  const updatedTask = await response.json();
-  setTasks(tasks.map((task) => (task._id === id ? updatedTask : task)));
-  setEditingTaskId(null);
-  setEditingText("");
-};
+
+  // Edit task text handler
+  const updateTaskText = async (id, newText) => {
+    const response = await fetch(
+      `https://to-do-list-backend-fxk9.onrender.com/tasks/${id}/text`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text: newText }),
+      }
+    );
+    const updatedTask = await response.json();
+    setTasks(tasks.map((task) => (task._id === id ? updatedTask : task)));
+    setEditingTaskId(null);
+    setEditingText("");
+  };
 
   useEffect(() => {
     if (token) fetchTasks(token);
   }, [token]);
 
+  // Logout function
   const logout = () => {
     setToken("");
     localStorage.removeItem("token");
     setTasks([]);
   };
 
+  // Add task to the list
   const addTask = async (text) => {
     const response = await fetch(
       "https://to-do-list-backend-fxk9.onrender.com/tasks",
@@ -73,6 +77,7 @@ const updateTaskText = async (id, newText) => {
     setTasks([...tasks, newTask]);
   };
 
+  // Delete a task
   const deleteTask = async (id) => {
     await fetch(`https://to-do-list-backend-fxk9.onrender.com/tasks/${id}`, {
       method: "DELETE",
@@ -81,6 +86,7 @@ const updateTaskText = async (id, newText) => {
     setTasks(tasks.filter((task) => task._id !== id));
   };
 
+  // Toggle task status
   const updateTaskStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === "pending" ? "completed" : "pending";
     const response = await fetch(
@@ -98,6 +104,7 @@ const updateTaskText = async (id, newText) => {
     setTasks(tasks.map((task) => (task._id === id ? updatedTask : task)));
   };
 
+  // Update task priority
   const updateTaskPriority = async (id, newPriority) => {
     const response = await fetch(
       `https://to-do-list-backend-fxk9.onrender.com/${id}/priority`,
@@ -114,13 +121,14 @@ const updateTaskText = async (id, newText) => {
     setTasks(tasks.map((task) => (task._id === id ? updatedTask : task)));
   };
 
+  // Filter tasks based on status and priority
   const filteredTasks = tasks.filter(
     (task) =>
       (filterStatus === "all" || task.status === filterStatus) &&
       (filterPriority === "all" || task.priority === filterPriority)
   );
 
-  // Main app UI for authenticated users
+  // MainApp component for logged-in users
   const MainApp = () => (
     <div className="min-h-screen bg-orange-50 flex flex-col">
       <nav className="bg-orange-500 text-white px-6 py-4 flex justify-between items-center shadow-md">
@@ -141,10 +149,13 @@ const updateTaskText = async (id, newText) => {
           Logout
         </button>
       </nav>
+
       <main className="flex-1 p-8">
         <h1 className="text-4xl font-extrabold text-center mb-8 text-orange-600 drop-shadow">
           MERN To-Do App
         </h1>
+
+        {/* Form to add new task */}
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -165,6 +176,8 @@ const updateTaskText = async (id, newText) => {
             Add
           </button>
         </form>
+
+        {/* Filters */}
         <div className="mb-6 flex gap-4 justify-center">
           <select
             onChange={(e) => setFilterStatus(e.target.value)}
@@ -186,6 +199,8 @@ const updateTaskText = async (id, newText) => {
             <option value="high">High</option>
           </select>
         </div>
+
+        {/* List of tasks */}
         <ul className="space-y-4">
           {filteredTasks.map((task) => (
             <li
@@ -194,16 +209,15 @@ const updateTaskText = async (id, newText) => {
             >
               <div className="flex-1">
                 {editingTaskId === task._id ? (
-  <input
-    type="text"
-    value={editingText}
-    onChange={(e) => setEditingText(e.target.value)}
-    className="text-lg border border-orange-300 rounded px-2 py-1 w-full"
-  />
-) : (
-  <span className="text-lg text-orange-800">{task.text}</span>
-)}
-
+                  <input
+                    type="text"
+                    value={editingText}
+                    onChange={(e) => setEditingText(e.target.value)}
+                    className="text-lg border border-orange-300 rounded px-2 py-1 w-full"
+                  />
+                ) : (
+                  <span className="text-lg text-orange-800">{task.text}</span>
+                )}
                 <span className="ml-2 text-sm text-gray-500">
                   ({task.status}, {task.priority})
                 </span>
@@ -219,6 +233,8 @@ const updateTaskText = async (id, newText) => {
                 >
                   {task.status === "pending" ? "Mark Complete" : "Mark Pending"}
                 </button>
+
+                {/* Priority dropdown */}
                 <select
                   value={task.priority}
                   onChange={(e) => updateTaskPriority(task._id, e.target.value)}
@@ -228,37 +244,51 @@ const updateTaskText = async (id, newText) => {
                   <option value="medium">Medium</option>
                   <option value="high">High</option>
                 </select>
+
+                {/* Delete and Edit buttons */}
                 <button
                   onClick={() => deleteTask(task._id)}
-                  {editingTaskId === task._id ? (
-  <button
-    onClick={() => updateTaskText(task._id, editingText)}
-    className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-  >
-    Save
-  </button>
-) : (
-  <button
-    onClick={() => {
-      setEditingTaskId(task._id);
-      setEditingText(task.text);
-    }}
-    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-  >
-    Edit
-  </button>
-)}
-
-                  className="flex items-center gap-1 px-3 py-1 bg-red-500 hover:bg-red-700 text-white font-semibold rounded-full transition-colors duration-200 ml-2"
-                  title="Delete Task"
+                  className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-700"
                 >
-                  <i className="fas fa-trash" /> Delete
+                  Delete
                 </button>
+
+                {editingTaskId === task._id ? (
+                  <>
+                    <button
+                      onClick={() => updateTaskText(task._id, editingText)}
+                      className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => {
+                        setEditingTaskId(null);
+                        setEditingText("");
+                      }}
+                      className="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-500"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setEditingTaskId(task._id);
+                      setEditingText(task.text);
+                    }}
+                    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    Edit
+                  </button>
+                )}
               </div>
             </li>
           ))}
         </ul>
       </main>
+
+      {/* Footer */}
       <footer className="bg-orange-500 text-white p-4 mt-auto text-center shadow-inner">
         © 2025 Your To-Do App
       </footer>
