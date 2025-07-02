@@ -32,22 +32,26 @@ function App() {
 
   // Edit task text handler
   const updateTaskText = async (id, newText) => {
-    const response = await fetch(
-      `https://to-do-list-backend-fxk9.onrender.com/tasks/${id}/text`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ text: newText }),
-      }
-    );
-    const updatedTask = await response.json();
-    setTasks(tasks.map((task) => (task._id === id ? updatedTask : task)));
-    setEditingTaskId(null);
-    setEditingText("");
-  };
+  const response = await fetch(
+    `https://to-do-list-backend-fxk9.onrender.com/tasks/${id}/text`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ text: newText }),
+    }
+  );
+  if (!response.ok) {
+    alert("Failed to update task text");
+    return;
+  }
+  const updatedTask = await response.json();
+  setTasks(tasks.map((task) => (task._id === id ? updatedTask : task)));
+  setEditingTaskId(null);
+  setEditingText("");
+};
 
   useEffect(() => {
     if (token) fetchTasks(token);
