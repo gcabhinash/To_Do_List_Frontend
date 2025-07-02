@@ -13,6 +13,9 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterPriority, setFilterPriority] = useState("all");
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editingText, setEditingText] = useState("");
+
 
   const fetchTasks = async (token) => {
     const response = await fetch(
@@ -26,6 +29,23 @@ function App() {
     // Ensure tasks is always an array
     setTasks(Array.isArray(data) ? data : data.tasks || []);
   };
+const updateTaskText = async (id, newText) => {
+  const response = await fetch(
+    `https://to-do-list-backend-fxk9.onrender.com/tasks/${id}/text`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ text: newText }),
+    }
+  );
+  const updatedTask = await response.json();
+  setTasks(tasks.map((task) => (task._id === id ? updatedTask : task)));
+  setEditingTaskId(null);
+  setEditingText("");
+};
 
   useEffect(() => {
     if (token) fetchTasks(token);
@@ -173,7 +193,17 @@ function App() {
               className="p-4 bg-white rounded-xl shadow flex flex-col md:flex-row md:items-center md:justify-between gap-4 hover:bg-orange-100 hover:shadow-lg transition duration-300"
             >
               <div className="flex-1">
-                <span className="text-lg text-orange-800">{task.text}</span>
+                {editingTaskId === task._id ? (
+  <input
+    type="text"
+    value={editingText}
+    onChange={(e) => setEditingText(e.target.value)}
+    className="text-lg border border-orange-300 rounded px-2 py-1 w-full"
+  />
+) : (
+  <span className="text-lg text-orange-800">{task.text}</span>
+)}
+
                 <span className="ml-2 text-sm text-gray-500">
                   ({task.status}, {task.priority})
                 </span>
@@ -200,6 +230,25 @@ function App() {
                 </select>
                 <button
                   onClick={() => deleteTask(task._id)}
+                  {editingTaskId === task._id ? (
+  <button
+    onClick={() => updateTaskText(task._id, editingText)}
+    className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+  >
+    Save
+  </button>
+) : (
+  <button
+    onClick={() => {
+      setEditingTaskId(task._id);
+      setEditingText(task.text);
+    }}
+    className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+  >
+    Edit
+  </button>
+)}
+
                   className="flex items-center gap-1 px-3 py-1 bg-red-500 hover:bg-red-700 text-white font-semibold rounded-full transition-colors duration-200 ml-2"
                   title="Delete Task"
                 >
