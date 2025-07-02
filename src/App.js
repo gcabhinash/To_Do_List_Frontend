@@ -88,38 +88,39 @@ function App() {
 
   // Toggle task status
   const updateTaskStatus = async (id, currentStatus) => {
-    const newStatus = currentStatus === "pending" ? "completed" : "pending";
-    const response = await fetch(
-      `https://to-do-list-backend-fxk9.onrender.com/${id}/status`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: newStatus }),
-      }
-    );
-    const updatedTask = await response.json();
-    setTasks(tasks.map((task) => (task._id === id ? updatedTask : task)));
-  };
+  const newStatus = currentStatus === "pending" ? "completed" : "pending";
+  const response = await fetch(
+    `https://to-do-list-backend-fxk9.onrender.com/${id}/status`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status: newStatus }),
+    }
+  );
+  const updatedTask = await response.json();
+  setTasks(tasks.map((task) => (task._id === id ? updatedTask : task)));
+};
+
 
   // Update task priority
   const updateTaskPriority = async (id, newPriority) => {
-    const response = await fetch(
-      `https://to-do-list-backend-fxk9.onrender.com/${id}/priority`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ priority: newPriority }),
-      }
-    );
-    const updatedTask = await response.json();
-    setTasks(tasks.map((task) => (task._id === id ? updatedTask : task)));
-  };
+  const response = await fetch(
+    `https://to-do-list-backend-fxk9.onrender.com/${id}/priority`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ priority: newPriority }),
+    }
+  );
+  const updatedTask = await response.json();
+  setTasks(tasks.map((task) => (task._id === id ? updatedTask : task)));
+};
 
   // Filter tasks based on status and priority
   const filteredTasks = tasks.filter(
